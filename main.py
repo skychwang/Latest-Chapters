@@ -1,27 +1,28 @@
 from tkinter import *
 from tkinter.ttk import *
-
+from lxml import html
+import requests
 
 class MainGUI(Frame):
 
     chapters = []
+    firstInit = True
   
     def __init__(self, parent):
         Frame.__init__(self, parent)   
          
         self.parent = parent
-
-        #refresh function contents here
-        self.chapters.append("hi")#temp
-        #
+        
+        self.refresh()
         
         self.initUI()
+        self.firstInit = False
 
         
     def initUI(self):
         self.parent.title("Latest Chapters")
         self.style = Style()
-        #self.style.theme_use("default")
+        self.style.theme_use("default")
 
         self.scrollbar = Scrollbar(self)
         self.scrollbar.pack(side=RIGHT, fill=BOTH)
@@ -46,14 +47,29 @@ class MainGUI(Frame):
         self.refreshButton.pack(side=RIGHT)
 
     def refresh(self):
-        self.chapters.append("hi")#temp
-        
-        self.listbox.destroy()
-        self.scrollbar.destroy()
-        self.frame.destroy()
-        self.closeButton.destroy()
-        self.refreshButton.destroy()
-        self.initUI()
+        #
+        updates = Scraper.scrape("http://mangafox.me/")#Add more sources
+        self.chapters = []#empty previous updates for refresh
+        for update in updates:
+            self.chapters.append(update)
+        #
+
+        if self.firstInit != True:#two separate ifs because listbox won't exist on first init yet so runtime error would occur
+            if self.listbox.winfo_exists() == 1:
+                self.listbox.destroy()
+                self.scrollbar.destroy()
+                self.frame.destroy()
+                self.closeButton.destroy()
+                self.refreshButton.destroy()
+                self.initUI()
+
+class Scraper:
+    def scrape(url):
+        page = requests.get(url)
+        tree = html.fromstring(page.content)
+        updates = tree.xpath('//ul[@id="updates"]/li/div/h3/a/text()')#returns array of chapter names 
+        #print(updates)#console error checking
+        return updates
               
 def main():
     root = Tk()
