@@ -14,8 +14,9 @@ Multiple source duplicate update checking
 
 ## Dependencies
 
-Modules: tkinter (included with Python installations), lxml, requests
+Modules: tkinter*, webbrowser*, lxml, requests  
+*(included with Python installations)
 
 ## etc.
 
-Exploration in Python webscraping and "de-rustification" of python skillz  
+Exploration in Python GUI software making.
