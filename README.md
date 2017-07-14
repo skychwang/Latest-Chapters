@@ -6,10 +6,11 @@ Manga chapter updates aggregator and displayer; sweet and minimal. Made with Pyt
 
 Demo GUI ✓  
 Button functions ✓  
-Updated chapter list get ✓ | Currently one source only, Mangafox  
-Updated chapter more info e.g. update time, update source etc.  
-Listbox hyperlinks  
-Multiple source duplicate update checking  
+Updated chapter list get ✓ | Currently one source only, Mangafox     
+Hyperlinks ✓  
+Tooltips on hover  
+Multiple sources  
+Combine sources and add duplicates cross-checking  
 ..more to come.  
 
 ## Dependencies
