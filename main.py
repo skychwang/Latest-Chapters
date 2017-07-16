@@ -22,7 +22,7 @@ class LatestChapters(Frame):
     def initUI(self):
         self.parent.title("Latest Chapters")
         self.style = Style()
-        #self.style.theme_use("default")
+        self.style.theme_use("default")
         self.scrollbar = Scrollbar(self)
         self.scrollbar.pack(side=RIGHT, fill=BOTH)
         self.tree = Treeview(self, yscrollcommand=self.scrollbar.set)
@@ -75,6 +75,7 @@ class LatestChapters(Frame):
                 self.frame.destroy()
                 self.closeButton.destroy()
                 self.refreshButton.destroy()
+                self.box.destroy()
                 self.initUI()
 
     def openLink(self, event):
