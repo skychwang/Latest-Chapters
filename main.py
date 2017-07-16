@@ -22,7 +22,7 @@ class LatestChapters(Frame):
     def initUI(self):
         self.parent.title("Latest Chapters")
         self.style = Style()
-        self.style.theme_use("default")
+        #self.style.theme_use("default")
         self.scrollbar = Scrollbar(self)
         self.scrollbar.pack(side=RIGHT, fill=BOTH)
         self.tree = Treeview(self, yscrollcommand=self.scrollbar.set)
@@ -55,6 +55,13 @@ class LatestChapters(Frame):
         self.refreshButton = Button(self, text="Refresh Now", command=self.refresh)
         self.refreshButton.pack(side=RIGHT, padx=5, pady=5)
 
+        self.box_value = StringVar()
+        self.box = Combobox(self, textvariable=self.box_value)
+        self.box['values'] = ('Mangafox', 'Mangalife')
+        self.box.current(0)
+        self.box.bind("<<ComboboxSelected>>", self.changeSource)
+        self.box.pack(side=RIGHT, padx=5, pady=5)
+
     def refresh(self):
         webscraper = Scraper("http://mangafox.me/")
         self.series = webscraper.series
@@ -73,14 +80,20 @@ class LatestChapters(Frame):
     def openLink(self, event):
         webbrowser.open(self.tree.item(self.tree.focus()).get('values')[0])
 
+    def changeSource(self, event):
+        self.value_of_combo = self.box.get()
+        print(self.value_of_combo)
+
 class Scraper:
-    
+
+    url = ''
     series = []
     times = []
     links = []
     newChapters = []
     
     def __init__(self, url):
+        self.url = url
         page = requests.get(url)
         tree = html.fromstring(page.content)
         self.getSeries(tree)
@@ -89,17 +102,21 @@ class Scraper:
         self.getNewChapters(tree)
         
     def getSeries(self, tree):
-        self.series = tree.xpath('//ul[@id="updates"]/li/div/h3/a/text()')
+        if self.url == 'http://mangafox.me/':
+            self.series = tree.xpath('//ul[@id="updates"]/li/div/h3/a/text()')
 
     def getTimes(self, tree):
-        self.times = tree.xpath('//ul[@id="updates"]/li/div/h3/em/text()')
+        if self.url == 'http://mangafox.me/':
+            self.times = tree.xpath('//ul[@id="updates"]/li/div/h3/em/text()')
         
     def getLinks(self, tree):
-        for count in range(0, len(self.series)):
-            self.links.append(self.series[count].getparent().get('href'))
+        if self.url == 'http://mangafox.me/':
+            for count in range(0, len(self.series)):
+                self.links.append(self.series[count].getparent().get('href'))
             
     def getNewChapters(self, tree):
-        self.newChapters = tree.xpath('//ul[@id="updates"]/li/div/dl/dt/span/a/text()')
+        if self.url == 'http://mangafox.me/':
+            self.newChapters = tree.xpath('//ul[@id="updates"]/li/div/dl/dt/span/a/text()')
                 
 def main():
     root = Tk()
