@@ -10,6 +10,7 @@ class LatestChapters(Frame):
     times = []
     links = []
     newChapters = []
+    currentSourceSelection = 0
     firstInit = True
   
     def __init__(self, parent):
@@ -55,12 +56,12 @@ class LatestChapters(Frame):
         self.refreshButton = Button(self, text="Refresh Now", command=self.refresh)
         self.refreshButton.pack(side=RIGHT, padx=5, pady=5)
 
-        self.box_value = StringVar()
-        self.box = Combobox(self, textvariable=self.box_value)
-        self.box['values'] = ('Mangafox', 'Mangalife')
-        self.box.current(0)
-        self.box.bind("<<ComboboxSelected>>", self.changeSource)
-        self.box.pack(side=RIGHT, padx=5, pady=5)
+        self.sourceSelection_value = StringVar()
+        self.sourceSelection = Combobox(self, textvariable=self.sourceSelection_value)
+        self.sourceSelection['values'] = ('Mangafox', 'Mangalife')
+        self.sourceSelection.current(self.currentSourceSelection)
+        self.sourceSelection.bind("<<ComboboxSelected>>", self.changeSource)
+        self.sourceSelection.pack(side=RIGHT, padx=5, pady=5)
 
     def refresh(self):
         webscraper = Scraper("http://mangafox.me/")
@@ -75,15 +76,16 @@ class LatestChapters(Frame):
                 self.frame.destroy()
                 self.closeButton.destroy()
                 self.refreshButton.destroy()
-                self.box.destroy()
+                self.currentSourceSelection = self.sourceSelection.current()
+                self.sourceSelection.destroy()
                 self.initUI()
 
     def openLink(self, event):
         webbrowser.open(self.tree.item(self.tree.focus()).get('values')[0])
 
     def changeSource(self, event):
-        self.value_of_combo = self.box.get()
-        print(self.value_of_combo)
+        self.value_of_sourceSelection = self.sourceSelection.get()
+        print(self.value_of_sourceSelection)
 
 class Scraper:
 
