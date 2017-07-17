@@ -10,7 +10,7 @@ Updated chapter list get ✓
 Hyperlinks ✓  
 Popup more chapter info ✓  
 Multiple sources ✓  
-Chapter info has series image 
+Chapter info has series image  
 ~~Combine sources and add duplicates cross-checking~~ Thinking of just doing a selecting option between sources, may change  
 Download images to local machine  
 Image viewer in GUI to read locally    
