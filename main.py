@@ -167,6 +167,7 @@ class Scraper:
 
 class getInfoScraper:
 
+    #info
     url = ''
     released = ''
     authors = ''
@@ -174,6 +175,7 @@ class getInfoScraper:
     genres = ''
     synopsis = ''
 
+    #statusinfo
     status = ''
     rating = ''
     rank = ''
@@ -185,7 +187,6 @@ class getInfoScraper:
         if 'http://mangafox.me/' in self.url:
             self.info = tree.xpath('//div/div/div/table/tr/td/a/text()')
             self.statusInfo = tree.xpath('//div/div/div/div/span/text()')
-            print(self.statusInfo)
         self.getReleased(tree)
         self.getAuthors(tree)
         self.getArtists(tree)
@@ -239,12 +240,18 @@ class getInfoScraper:
 
     def getRating(self, tree):
         if 'http://mangafox.me/' in self.url:
-            self.rating = self.statusInfo[4].rstrip().lstrip()
+            if len(self.statusInfo) == 3:#basically if status=completed, different format of xpath output
+                self.rating = self.statusInfo[2].rstrip().lstrip()
+            else:
+                self.rating = self.statusInfo[4].rstrip().lstrip()
 
     def getRank(self, tree):
         if 'http://mangafox.me/' in self.url:
-            self.rank = self.statusInfo[3].rstrip().lstrip()
-
+            if len(self.statusInfo) == 3:#basically if status=completed, different format of xpath output
+                self.rank = self.statusInfo[1].rstrip().lstrip()
+            else:
+                self.rank = self.statusInfo[3].rstrip().lstrip()
+                
 def main():
     root = Tk()
     root.geometry("450x255+300+300")
