@@ -8,12 +8,12 @@ Demo GUI ✓
 Button functions ✓  
 Updated chapter list get ✓  
 Hyperlinks ✓  
-Tooltips on hover showing chapter info  
+Popup more chapter info ✓  
 Multiple sources ✓  
-Combine sources and add duplicates cross-checking  
+Chapter info has series image 
+~~Combine sources and add duplicates cross-checking~~ Thinking of just doing a selecting option between sources, may change  
 Download images to local machine  
-Image viewer in GUI to read locally  
-Download chapter selection  
+Image viewer in GUI to read locally    
 ..more to come.  
 
 ## Dependencies
