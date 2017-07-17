@@ -23,4 +23,4 @@ Modules: tkinter*, webbrowser*, lxml, requests
 
 ## etc.
 
-An exploration in making GUI software using Python.
+An exploration in using Python to make GUI software.

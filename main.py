@@ -46,7 +46,7 @@ class LatestChapters(Frame):
                 num += 1
             newChapterIDs = newChapterIDs.lstrip()
             self.tree.insert('', 'end', text=self.series[oneSeries], values=(self.links[oneSeries], newChapterIDs, self.times[oneSeries]))
-        self.tree.bind('<Double-Button-1>' , self.openLink)
+        self.tree.bind('<Double-Button-1>' , self.moreInfo)
         self.tree["displaycolumns"]=('newChapters', 'timeUpdated')
         self.tree.pack(side=TOP, fill=BOTH)
         self.scrollbar.config(command=self.tree.yview)
@@ -88,9 +88,33 @@ class LatestChapters(Frame):
     def openLink(self, event):
         webbrowser.open(self.tree.item(self.tree.focus()).get('values')[0])
 
+    def openLink(self):
+        webbrowser.open(self.tree.item(self.tree.focus()).get('values')[0])
+
     def changeSource(self, event):
         #self.sourceSelection.get()
         self.refresh()
+
+    def moreInfo(self, event):
+        toplevel = Toplevel()
+        #toplevel.geometry("%dx%d%+d%+d" % (350, 200, 250, 125))
+        seriesName = Label(toplevel, text='Series Name: ' + self.tree.item(self.tree.focus()).get('text'), background="white").grid(columnspan=2)
+        infoLabel = Label(toplevel, text="Info:", background="white").grid(columnspan=2, sticky=W)
+        info = Text(toplevel, background="grey")
+        mangaInfo = getInfoScraper(self.tree.item(self.tree.focus()).get('values')[0])
+        info.grid(columnspan=2)
+        info.insert(INSERT, "Released: " + mangaInfo.released)
+        info.insert(INSERT, "\nAuthors: " + mangaInfo.authors)
+        info.insert(INSERT, "\nArtists: " + mangaInfo.artists)
+        info.insert(INSERT, "\nGenres: " + mangaInfo.genres)
+        info.insert(INSERT, "\n\nStatus: " + mangaInfo.status)
+        info.insert(INSERT, "\nRank: " + mangaInfo.rank)
+        info.insert(INSERT, "\nRating: " + mangaInfo.rating)
+        info.insert(INSERT, "\n\nSynopsis:\n\n " + mangaInfo.synopsis)
+        closeButton = Button(toplevel, text="Close", command=toplevel.destroy)
+        closeButton.grid(column=1,row=4)
+        webLinkButton = Button(toplevel, text="Read Manga", command=self.openLink)
+        webLinkButton.grid(column=0,row=4)
 
 class Scraper:
 
@@ -140,7 +164,87 @@ class Scraper:
             self.newChapters = tree.xpath('//ul[@id="updates"]/li/div/dl/dt/span/a/text()')
         elif self.url == 'http://mangalife.us/':
             self.newChapters = tree.xpath('//div/div/div/div/a/div/div/p/text()')
-            
+
+class getInfoScraper:
+
+    url = ''
+    released = ''
+    authors = ''
+    artists = ''
+    genres = ''
+    synopsis = ''
+
+    status = ''
+    rating = ''
+    rank = ''
+    
+    def __init__(self, url):
+        self.url = url
+        page = requests.get(url)
+        tree = html.fromstring(page.content)
+        if 'http://mangafox.me/' in self.url:
+            self.info = tree.xpath('//div/div/div/table/tr/td/a/text()')
+            self.statusInfo = tree.xpath('//div/div/div/div/span/text()')
+            print(self.statusInfo)
+        self.getReleased(tree)
+        self.getAuthors(tree)
+        self.getArtists(tree)
+        self.getGenres(tree)
+        self.getSynopsis(tree)
+        self.getStatus(tree)
+        self.getRating(tree)
+        self.getRank(tree)
+
+    def getReleased(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            for count in range(0, len(self.info)):
+                if 'released' in self.info[count].getparent().get('href'):
+                    self.released = self.info[count]
+                    
+    def getAuthors(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            for count in range(0, len(self.info)):
+                if 'author' in self.info[count].getparent().get('href'):
+                    if self.authors == '':
+                        self.authors += self.info[count]
+                    else:
+                        self.authors += ', ' + self.info[count]
+
+    def getArtists(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            for count in range(0, len(self.info)):
+                if 'artist' in self.info[count].getparent().get('href'):
+                    if self.artists == '':
+                        self.artists += self.info[count]
+                    else:
+                        self.artists += ', ' + self.info[count]
+
+    def getGenres(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            for count in range(0, len(self.info)):
+                if 'genres' in self.info[count].getparent().get('href'):
+                    if self.genres == '':
+                        self.genres += self.info[count]
+                    else:
+                        self.genres += ', ' + self.info[count]
+
+    def getSynopsis(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            for count in range(0, len(tree.xpath('//div/div/div[@id="title"]/p/text()'))):
+                self.synopsis += tree.xpath('//div/div/div[@id="title"]/p/text()')[count]
+
+    def getStatus(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            self.status = self.statusInfo[0].rstrip().lstrip()
+
+    def getRating(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            self.rating = self.statusInfo[4].rstrip().lstrip()
+
+    def getRank(self, tree):
+        if 'http://mangafox.me/' in self.url:
+            self.rank = self.statusInfo[3].rstrip().lstrip()
+
 def main():
     root = Tk()
     root.geometry("450x255+300+300")
