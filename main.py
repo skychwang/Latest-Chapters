@@ -3,6 +3,7 @@ from tkinter.ttk import *
 from lxml import html
 import requests
 import webbrowser
+from tkinter.font import Font
 
 class LatestChapters(Frame):
 
@@ -10,7 +11,7 @@ class LatestChapters(Frame):
     times = []
     links = []
     newChapters = []
-    currentSourceSelection = 1#change this to change starting source; index corresponds to item in sourcesNames
+    currentSourceSelection = 0#change this to change starting source; index corresponds to item in sourcesNames
     sourcesNames = ('Mangafox', 'Mangalife');
     sourcesURL = {"Mangafox":"http://mangafox.me/", "Mangalife":"http://mangalife.us/"}
     firstInit = True
@@ -23,9 +24,10 @@ class LatestChapters(Frame):
         self.firstInit = False
         
     def initUI(self):
+        #MainUI
         self.parent.title("Latest Chapters")
         self.style = Style()
-        self.style.theme_use("default")
+        #self.style.theme_use("default")
         self.scrollbar = Scrollbar(self)
         self.scrollbar.pack(side=RIGHT, fill=BOTH)
         self.tree = Treeview(self, yscrollcommand=self.scrollbar.set)
@@ -48,12 +50,9 @@ class LatestChapters(Frame):
             self.tree.insert('', 'end', text=self.series[oneSeries], values=(self.links[oneSeries], newChapterIDs, self.times[oneSeries]))
         self.tree.bind('<Double-Button-1>' , self.moreInfo)
         self.tree["displaycolumns"]=('newChapters', 'timeUpdated')
-        self.tree.pack(side=TOP, fill=BOTH)
+        self.tree.pack(side=TOP, fill=BOTH, expand=True)
         self.scrollbar.config(command=self.tree.yview)
-        self.frame = Frame(self, relief=RAISED, borderwidth=1)
-        self.frame.rowconfigure(0, weight=1)
-        self.frame.pack(fill=BOTH, expand=True)
-        self.pack(fill=BOTH, expand=True)
+        #Ending buttons
         self.closeButton = Button(self, text="Close", command=self.master.destroy)
         self.closeButton.pack(side=RIGHT, padx=5, pady=5)
         self.refreshButton = Button(self, text="Refresh Now", command=self.refresh)
@@ -64,6 +63,7 @@ class LatestChapters(Frame):
         self.sourceSelection.current(self.currentSourceSelection)
         self.sourceSelection.bind("<<ComboboxSelected>>", self.changeSource)
         self.sourceSelection.pack(side=RIGHT, padx=5, pady=5)
+        self.pack(fill=BOTH, expand=True)
 
     def refresh(self):
         if self.firstInit != True:
@@ -78,7 +78,6 @@ class LatestChapters(Frame):
             if self.tree.winfo_exists() == 1:
                 self.tree.destroy()
                 self.scrollbar.destroy()
-                self.frame.destroy()
                 self.closeButton.destroy()
                 self.refreshButton.destroy()
                 self.currentSourceSelection = self.sourceSelection.current()
@@ -98,11 +97,16 @@ class LatestChapters(Frame):
     def moreInfo(self, event):
         toplevel = Toplevel()
         #toplevel.geometry("%dx%d%+d%+d" % (350, 200, 250, 125))
-        seriesName = Label(toplevel, text='Series Name: ' + self.tree.item(self.tree.focus()).get('text'), background="white").grid(columnspan=2)
-        infoLabel = Label(toplevel, text="Info:", background="white").grid(columnspan=2, sticky=W)
+        #Labels
+        seriesName = Label(toplevel, text='Series Name: ' + self.tree.item(self.tree.focus()).get('text'))
+        seriesName.grid(columnspan=2, sticky=NSEW)
+        infoLabel = Label(toplevel, text="Info:")
+        infoLabel.grid(columnspan=2, sticky=NSEW)
+        #Textarea
         info = Text(toplevel, background="grey")
         mangaInfo = getInfoScraper(self.tree.item(self.tree.focus()).get('values')[0])
-        info.grid(columnspan=2)
+        info.grid(columnspan=2,sticky="nsew")
+        #Populating textarea
         info.insert(INSERT, "Released: " + mangaInfo.released)
         info.insert(INSERT, "\nAuthors: " + mangaInfo.authors)
         info.insert(INSERT, "\nArtists: " + mangaInfo.artists)
@@ -110,11 +114,30 @@ class LatestChapters(Frame):
         info.insert(INSERT, "\n\nStatus: " + mangaInfo.status)
         info.insert(INSERT, "\nRank: " + mangaInfo.rank)
         info.insert(INSERT, "\nRating: " + mangaInfo.rating)
-        info.insert(INSERT, "\n\nSynopsis:\n\n " + mangaInfo.synopsis)
+        info.insert(INSERT, "\n\nSynopsis:\n\n" + mangaInfo.synopsis)
+        #Font changes
+        bold_font = Font(weight="bold")
+        info.tag_configure("BOLD", font=bold_font)
+        info.tag_add("BOLD", "1.0", "1.9")
+        info.tag_add("BOLD", "2.0", "2.8")
+        info.tag_add("BOLD", "3.0", "3.8")
+        info.tag_add("BOLD", "4.0", "4.7")
+        info.tag_add("BOLD", "6.0", "6.7")
+        info.tag_add("BOLD", "7.0", "7.5")
+        info.tag_add("BOLD", "8.0", "8.7")
+        info.tag_add("BOLD", "10.0", "10.9")
+        #Ending buttons
         closeButton = Button(toplevel, text="Close", command=toplevel.destroy)
-        closeButton.grid(column=1,row=4)
+        closeButton.grid(column=1,row=3,sticky="nsew")
         webLinkButton = Button(toplevel, text="Read Manga", command=self.openLink)
-        webLinkButton.grid(column=0,row=4)
+        webLinkButton.grid(column=0,row=3,sticky="nsew")
+        #Scaling weights
+        toplevel.grid_rowconfigure(0, weight=0)#4 rows starting 0
+        toplevel.grid_rowconfigure(1, weight=0)
+        toplevel.grid_rowconfigure(2, weight=1)
+        toplevel.grid_rowconfigure(3, weight=0)
+        toplevel.grid_columnconfigure(0, weight=1)#2 columns starting 0
+        toplevel.grid_columnconfigure(1, weight=1)
 
 class Scraper:
 
