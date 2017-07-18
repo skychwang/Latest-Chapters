@@ -10,7 +10,7 @@ class LatestChapters(Frame):
     times = []
     links = []
     newChapters = []
-    currentSourceSelection = 0#change this to change starting source; index corresponds to item in sourcesNames
+    currentSourceSelection = 1#change this to change starting source; index corresponds to item in sourcesNames
     sourcesNames = ('Mangafox', 'Mangalife');
     sourcesURL = {"Mangafox":"http://mangafox.me/", "Mangalife":"http://mangalife.us/"}
     firstInit = True
@@ -182,11 +182,16 @@ class getInfoScraper:
     
     def __init__(self, url):
         self.url = url
-        page = requests.get(url)
+        if 'http://mangalife.us/' in self.url:
+            self.url = self.url.split("-chapter",1 )[0].replace('read-online', 'manga')
+        page = requests.get(self.url)
         tree = html.fromstring(page.content)
         if 'http://mangafox.me/' in self.url:
             self.info = tree.xpath('//div/div/div/table/tr/td/a/text()')
             self.statusInfo = tree.xpath('//div/div/div/div/span/text()')
+        elif 'http://mangalife.us/' in self.url:
+            self.info = tree.xpath('//div/div/div/div/span/div/div/a/text()')
+            #No statusInfo like ranking for this source
         self.getReleased(tree)
         self.getAuthors(tree)
         self.getArtists(tree)
@@ -201,9 +206,20 @@ class getInfoScraper:
             for count in range(0, len(self.info)):
                 if 'released' in self.info[count].getparent().get('href'):
                     self.released = self.info[count]
+        if 'http://mangalife.us/' in self.url:
+            for count in range(0, len(self.info)):
+                if 'year' in self.info[count].getparent().get('href'):
+                    self.released = self.info[count]
                     
     def getAuthors(self, tree):
         if 'http://mangafox.me/' in self.url:
+            for count in range(0, len(self.info)):
+                if 'author' in self.info[count].getparent().get('href'):
+                    if self.authors == '':
+                        self.authors += self.info[count]
+                    else:
+                        self.authors += ', ' + self.info[count]
+        if 'http://mangalife.us/' in self.url:
             for count in range(0, len(self.info)):
                 if 'author' in self.info[count].getparent().get('href'):
                     if self.authors == '':
@@ -219,6 +235,10 @@ class getInfoScraper:
                         self.artists += self.info[count]
                     else:
                         self.artists += ', ' + self.info[count]
+            if self.artists == '':
+                self.artists += 'Unknown'
+        if 'http://mangalife.us/' in self.url:
+            self.artists = "NIL for this source."
 
     def getGenres(self, tree):
         if 'http://mangafox.me/' in self.url:
@@ -228,15 +248,27 @@ class getInfoScraper:
                         self.genres += self.info[count]
                     else:
                         self.genres += ', ' + self.info[count]
+        if 'http://mangalife.us/' in self.url:
+            for count in range(0, len(self.info)):
+                if 'genre' in self.info[count].getparent().get('href'):
+                    if self.genres == '':
+                        self.genres += self.info[count]
+                    else:
+                        self.genres += ', ' + self.info[count]
 
     def getSynopsis(self, tree):
         if 'http://mangafox.me/' in self.url:
             for count in range(0, len(tree.xpath('//div/div/div[@id="title"]/p/text()'))):
                 self.synopsis += tree.xpath('//div/div/div[@id="title"]/p/text()')[count]
+        if 'http://mangalife.us/' in self.url:
+            for count in range(0, len(tree.xpath('//div[@class="description"]/text()'))):
+                self.synopsis += tree.xpath('//div[@class="description"]/text()')[count]
 
     def getStatus(self, tree):
         if 'http://mangafox.me/' in self.url:
-            self.status = self.statusInfo[0].rstrip().lstrip()
+            self.status = self.statusInfo[0].rstrip().lstrip().replace(',','')
+        if 'http://mangalife.us/' in self.url:
+            self.status = "NIL for this source."
 
     def getRating(self, tree):
         if 'http://mangafox.me/' in self.url:
@@ -244,6 +276,8 @@ class getInfoScraper:
                 self.rating = self.statusInfo[2].rstrip().lstrip()
             else:
                 self.rating = self.statusInfo[4].rstrip().lstrip()
+        if 'http://mangalife.us/' in self.url:
+            self.rating = "NIL for this source."
 
     def getRank(self, tree):
         if 'http://mangafox.me/' in self.url:
@@ -251,6 +285,8 @@ class getInfoScraper:
                 self.rank = self.statusInfo[1].rstrip().lstrip()
             else:
                 self.rank = self.statusInfo[3].rstrip().lstrip()
+        if 'http://mangalife.us/' in self.url:
+            self.rank = "NIL for this source."
                 
 def main():
     root = Tk()
