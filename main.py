@@ -4,6 +4,7 @@ from lxml import html
 import requests
 import webbrowser
 from tkinter.font import Font
+import collections
 
 class LatestChapters(Frame):
 
@@ -43,9 +44,12 @@ class LatestChapters(Frame):
         num = 0
         for oneSeries in range(0, len(self.series)):
             newChapterIDs = ''
-            while num < len(self.newChapters) and self.series[oneSeries] in self.newChapters[num]:
-                newChapterIDs += self.newChapters[num].replace(self.series[oneSeries], '')
-                num += 1
+            if self.currentSourceSelection == 0:
+                while num < len(self.newChapters) and self.series[oneSeries] in self.newChapters[num]:
+                    newChapterIDs += self.newChapters[num].replace(self.series[oneSeries], '')
+                    num += 1
+            elif self.currentSourceSelection == 1:#For MangaLife each new chapter will have a new row /Temp
+                newChapterIDs = self.newChapters[oneSeries].replace(self.series[oneSeries], '')
             newChapterIDs = newChapterIDs.lstrip()
             self.tree.insert('', 'end', text=self.series[oneSeries], values=(self.links[oneSeries], newChapterIDs, self.times[oneSeries]))
         self.tree.bind('<Double-Button-1>' , self.moreInfo)
