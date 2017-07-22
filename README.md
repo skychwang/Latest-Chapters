@@ -11,14 +11,13 @@ Hyperlinks ✓
 Popup more chapter info ✓  
 Multiple sources ✓  
 Chapter info has series image  
-~~Combine sources and add duplicates cross-checking~~ Thinking of just doing a selecting option between sources, may change  
-Download images to local machine  
-Image viewer in GUI to read locally    
+Download images to local machine ✓  
+Image viewer in GUI to read locally  
 ..more to come.  
 
 ## Dependencies
 
-Modules: tkinter*, webbrowser*, lxml, requests  
+Modules: tkinter*, webbrowser*, lxml, requests, PIL (Pillow)  
 *(included with Python installations)
 
 ## etc.
