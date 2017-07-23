@@ -149,9 +149,10 @@ class LatestChapters(Frame):
         url = self.tree.item(self.tree.focus()).get('values')[0]
         if "mangalife" in url:
             url = url.replace("-page-1", "")
-            downloader = ChapterDownloader(url)#Should indent leftwards one tab
+            downloader = ChapterDownloader(url)
+            gallery = Gallery(downloader.images)
         elif "mangafox" in url:
-            self.openLink()#temp
+            self.openLink()
 
 class ChapterDownloader(Tk):
     url = ''
@@ -172,6 +173,9 @@ class ChapterDownloader(Tk):
 
         self.getImages()
 
+        self.progress.destroy()
+        self.destroy()
+
     def getImgURLs(self, tree):
         if "mangalife" in self.url:
             imgs = tree.xpath('//div[@class="fullchapimage"]/img')
@@ -181,13 +185,51 @@ class ChapterDownloader(Tk):
     def getImages(self):
         imageURL = self.imgURLs[self.progress["value"]]
         raw_data = urllib.request.urlopen(imageURL).read()
-        im = Image.open(io.BytesIO(raw_data))
-        image = ImageTk.PhotoImage(im)
+        image = Image.open(io.BytesIO(raw_data))
         self.images.append(image)
         self.progress["value"] += 1
         self.progress.update()
         if self.progress["value"] < self.progress["maximum"]:
-            self.after(self.getImages())
+            self.after(1, self.getImages())
+
+class Gallery(Tk):
+    images = []
+    current = 0
+
+    def __init__(self, images, *args, **kwargs):
+        toplevel = Toplevel()
+        toplevel.geometry("600x900")
+        self.images = images
+        self.label = Label(toplevel)
+        self.label.grid(columnspan=3, sticky="nsew")
+        self.label.bind('<Configure>', self._resize_image)
+        self.b1 = Button(toplevel, text='Previous picture', command=lambda: self.move(-1)).grid(column=0, row=1, sticky="nsew")
+        self.b2 = Button(toplevel, text='Next picture', command=lambda: self.move(+1)).grid(column=1, row=1, sticky="nsew")
+        self.b3 = Button(toplevel, text='Quit', command=toplevel.destroy).grid(column=2, row=1, sticky="nsew")
+        toplevel.grid_rowconfigure(0, weight=1)  # 4 rows starting 0
+        toplevel.grid_rowconfigure(1, weight=0)
+        toplevel.grid_columnconfigure(0, weight=1)  # 2 columns starting 0
+        toplevel.grid_columnconfigure(1, weight=1)
+        toplevel.grid_columnconfigure(2, weight=1)
+        self.move(0)
+
+    def move(self, delta):
+        global current, images
+        if not (0 <= self.current + delta < len(self.images)):
+            messagebox.showinfo('End', 'No more image.')
+            return
+        self.current += delta
+        self.photo = ImageTk.PhotoImage(self.images[self.current])
+        self.img_copy = self.images[self.current].copy()
+        self.label['image'] = self.photo
+        self.label.photo = self.photo
+
+    def _resize_image(self, event):
+        new_width = event.width
+        new_height = event.height
+        self.image = self.img_copy.resize((new_width, new_height))
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.label.configure(image=self.photo)
 
 class Scraper:
     url = ''

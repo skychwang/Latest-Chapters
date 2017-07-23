@@ -12,7 +12,8 @@ Popup more chapter info ✓
 Multiple sources ✓  
 Chapter info has series image  
 Download images to local machine ✓  
-Image viewer in GUI to read locally  
+Image viewer in GUI to read locally ✓  
+Resize image when window resize ✓  
 ..more to come.  
 
 ## Dependencies
