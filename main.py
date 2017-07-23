@@ -7,6 +7,7 @@ from tkinter.font import Font
 import io
 import urllib
 from PIL import Image, ImageTk
+from tkinter import messagebox
 
 class LatestChapters(Frame):
     series = []
@@ -197,32 +198,44 @@ class Gallery(Tk):
     current = 0
 
     def __init__(self, images, *args, **kwargs):
-        toplevel = Toplevel()
-        toplevel.geometry("600x900")
+        self.toplevel = Toplevel()
+        self.toplevel.geometry("600x900")
         self.images = images
-        self.label = Label(toplevel)
+        self.label = Label(self.toplevel)
         self.label.grid(columnspan=3, sticky="nsew")
         self.label.bind('<Configure>', self._resize_image)
-        self.b1 = Button(toplevel, text='Previous picture', command=lambda: self.move(-1)).grid(column=0, row=1, sticky="nsew")
-        self.b2 = Button(toplevel, text='Next picture', command=lambda: self.move(+1)).grid(column=1, row=1, sticky="nsew")
-        self.b3 = Button(toplevel, text='Quit', command=toplevel.destroy).grid(column=2, row=1, sticky="nsew")
-        toplevel.grid_rowconfigure(0, weight=1)  # 4 rows starting 0
-        toplevel.grid_rowconfigure(1, weight=0)
-        toplevel.grid_columnconfigure(0, weight=1)  # 2 columns starting 0
-        toplevel.grid_columnconfigure(1, weight=1)
-        toplevel.grid_columnconfigure(2, weight=1)
+        self.pageNumber = Label(self.toplevel, text="Page 1", anchor=CENTER)
+        self.pageNumber.grid(columnspan=3, sticky="nsew")
+        self.b1 = Button(self.toplevel, text='Previous Page', command=lambda: self.move(-1)).grid(column=0, row=2, sticky="nsew")
+        self.b2 = Button(self.toplevel, text='Next Page', command=lambda: self.move(+1)).grid(column=1, row=2, sticky="nsew")
+        self.b3 = Button(self.toplevel, text='Close Window', command=self.toplevel.destroy).grid(column=2, row=2, sticky="nsew")
+        self.toplevel.grid_rowconfigure(0, weight=1)
+        self.toplevel.grid_rowconfigure(1, weight=0)
+        self.toplevel.grid_rowconfigure(2, weight=0)
+        self.toplevel.grid_columnconfigure(0, weight=1)
+        self.toplevel.grid_columnconfigure(1, weight=1)
+        self.toplevel.grid_columnconfigure(2, weight=1)
         self.move(0)
 
     def move(self, delta):
         global current, images
-        if not (0 <= self.current + delta < len(self.images)):
-            messagebox.showinfo('End', 'No more image.')
+        if not (self.current + delta < len(self.images)):
+            messagebox.showinfo('ERROR', 'You have reached the end of this chapter.')
+            return
+        if not (0 <= self.current + delta):
+            messagebox.showinfo('ERROR', 'You are on the first page of this chapter.')
             return
         self.current += delta
         self.photo = ImageTk.PhotoImage(self.images[self.current])
         self.img_copy = self.images[self.current].copy()
         self.label['image'] = self.photo
         self.label.photo = self.photo
+        new_width = self.toplevel.winfo_width()
+        new_height = self.toplevel.winfo_height()
+        self.image = self.img_copy.resize((new_width, new_height))
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.label.configure(image=self.photo)
+        self.pageNumber.configure(text="Page " + str(self.current + 1))
 
     def _resize_image(self, event):
         new_width = event.width
