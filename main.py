@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox
+from tkinter.font import Font
 from lxml import html
+from PIL import Image, ImageTk
 import requests
 import webbrowser
-from tkinter.font import Font
 import io
 import urllib
-from PIL import Image, ImageTk
-from tkinter import messagebox
 
 class LatestChapters(Frame):
     series = []
@@ -166,14 +166,14 @@ class ChapterDownloader(Tk):
         page = requests.get(url)
         tree = html.fromstring(page.content)
         self.getImgURLs(tree)
-
+        # Progress bar init
         self.progress = Progressbar(self, orient="horizontal", length=200, mode="determinate")
         self.progress.pack()
         self.progress["value"] = 0
         self.progress["maximum"] = len(self.imgURLs)
-
+        # Start downloading images
         self.getImages()
-
+        # Close progress bar
         self.progress.destroy()
         self.destroy()
 
@@ -195,54 +195,62 @@ class ChapterDownloader(Tk):
 
 class Gallery(Tk):
     images = []
-    current = 0
+    currentImage = 0
+    baseHeight = 900
+    firstInit = True
 
     def __init__(self, images, *args, **kwargs):
         self.toplevel = Toplevel()
-        self.toplevel.geometry("600x900")
         self.images = images
-        self.label = Label(self.toplevel)
-        self.label.grid(columnspan=3, sticky="nsew")
-        self.label.bind('<Configure>', self._resize_image)
+        # UI elements init
+        self.displayImage = Label(self.toplevel)
+        self.displayImage.grid(columnspan=3, sticky="nsew")
+        self.displayImage.bind('<Configure>', self.resizeImage)
         self.pageNumber = Label(self.toplevel, text="Page 1", anchor=CENTER)
         self.pageNumber.grid(columnspan=3, sticky="nsew")
-        self.b1 = Button(self.toplevel, text='Previous Page', command=lambda: self.move(-1)).grid(column=0, row=2, sticky="nsew")
-        self.b2 = Button(self.toplevel, text='Next Page', command=lambda: self.move(+1)).grid(column=1, row=2, sticky="nsew")
-        self.b3 = Button(self.toplevel, text='Close Window', command=self.toplevel.destroy).grid(column=2, row=2, sticky="nsew")
+        self.previousPageButton = Button(self.toplevel, text='Previous Page', command=lambda: self.changePage(-1)).grid(column=0, row=2, sticky="nsew")
+        self.nextPageButton = Button(self.toplevel, text='Next Page', command=lambda: self.changePage(+1)).grid(column=1, row=2, sticky="nsew")
+        self.closeWindowButton = Button(self.toplevel, text='Close Window', command=self.toplevel.destroy).grid(column=2, row=2, sticky="nsew")
+        # Scaling weights
         self.toplevel.grid_rowconfigure(0, weight=1)
         self.toplevel.grid_rowconfigure(1, weight=0)
         self.toplevel.grid_rowconfigure(2, weight=0)
         self.toplevel.grid_columnconfigure(0, weight=1)
         self.toplevel.grid_columnconfigure(1, weight=1)
         self.toplevel.grid_columnconfigure(2, weight=1)
-        self.move(0)
+        # Set first displayed page
+        self.changePage(0)
+        self.firstInit = False
 
-    def move(self, delta):
-        global current, images
-        if not (self.current + delta < len(self.images)):
+    def setDefaultPageSize(self):
+        if self.toplevel.winfo_height() != self.baseHeight and self.firstInit != True:
+            self.baseHeight = self.toplevel.winfo_height()
+        hpercent = (self.baseHeight / float(ImageTk.PhotoImage(self.images[self.currentImage]).height()))
+        baseWidth = int(float(ImageTk.PhotoImage(self.images[self.currentImage]).width()) * hpercent)
+        self.toplevel.geometry(str(baseWidth) + "x" + str(self.baseHeight))
+
+    def changePage(self, delta):
+        global currentImage, images
+        if not (self.currentImage + delta < len(self.images)):
             messagebox.showinfo('ERROR', 'You have reached the end of this chapter.')
             return
-        if not (0 <= self.current + delta):
+        if not (0 <= self.currentImage + delta):
             messagebox.showinfo('ERROR', 'You are on the first page of this chapter.')
             return
-        self.current += delta
-        self.photo = ImageTk.PhotoImage(self.images[self.current])
-        self.img_copy = self.images[self.current].copy()
-        self.label['image'] = self.photo
-        self.label.photo = self.photo
-        new_width = self.toplevel.winfo_width()
-        new_height = self.toplevel.winfo_height()
-        self.image = self.img_copy.resize((new_width, new_height))
-        self.photo = ImageTk.PhotoImage(self.image)
-        self.label.configure(image=self.photo)
-        self.pageNumber.configure(text="Page " + str(self.current + 1))
+        self.currentImage += delta
+        self.photo = ImageTk.PhotoImage(self.images[self.currentImage])
+        self.img_copy = self.images[self.currentImage].copy()
+        self.displayImage['image'] = self.photo
+        self.pageNumber.configure(text="Page " + str(self.currentImage + 1))
+        # Set default in-proportion size of toplevel
+        self.setDefaultPageSize()
+        # Resize image to fit window
+        self.photo = ImageTk.PhotoImage(self.img_copy.resize((self.toplevel.winfo_width(), self.toplevel.winfo_height())))
+        self.displayImage.configure(image=self.photo)
 
-    def _resize_image(self, event):
-        new_width = event.width
-        new_height = event.height
-        self.image = self.img_copy.resize((new_width, new_height))
-        self.photo = ImageTk.PhotoImage(self.image)
-        self.label.configure(image=self.photo)
+    def resizeImage(self, event):
+        self.photo = ImageTk.PhotoImage(self.img_copy.resize((event.width, event.height)))
+        self.displayImage.configure(image=self.photo)
 
 class Scraper:
     url = ''
