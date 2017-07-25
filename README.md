@@ -14,6 +14,7 @@ Chapter info has series image
 Download images to local machine ✓  
 Image viewer in GUI to read locally ✓  
 Resize image when window resize ✓  
+Favorites menu and new chapter notices  
 ..more to come.  
 
 ## Dependencies
